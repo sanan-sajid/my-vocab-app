@@ -26,7 +26,7 @@ genai.configure(api_key=GEMINI_API_KEY)
 def get_ai_meanings(word):
     """Fetches with better error handling"""
     # Using gemini-pro as it's often more stable for JSON tasks
-    model = genai.GenerativeModel('gemini-pro') 
+    model = genai.GenerativeModel('gemini-1.5-flash')
     
     prompt = f"""
     You are a dictionary API. Define '{word}'.
