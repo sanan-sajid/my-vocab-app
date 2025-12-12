@@ -482,7 +482,17 @@ with tab2:
 with tab3:
     st.subheader("📚 Spaced Repetition Review")
     
-    due_words = [w for w in words if datetime.fromisoformat(w['next_review']) <= datetime.now()]
+    # Handle timezone-aware datetime comparison
+    try:
+        due_words = []
+        for w in words:
+            next_review = datetime.fromisoformat(w['next_review'].replace('Z', '+00:00'))
+            # Remove timezone info for comparison
+            if next_review.replace(tzinfo=None) <= datetime.now():
+                due_words.append(w)
+    except:
+        # Fallback to simple comparison
+        due_words = [w for w in words if w['next_review'] <= datetime.now().isoformat()]
     
     if not due_words:
         st.success("🎉 No words due for review! Come back later or practice in Games mode.")
@@ -570,12 +580,17 @@ with tab4:
                     st.markdown(f"<span class='mastery-badge mastery-{mastery}'>Level {mastery}</span>", 
                               unsafe_allow_html=True)
                     
-                    next_review = datetime.fromisoformat(word['next_review'])
-                    if next_review <= datetime.now():
-                        st.warning("⏰ Due now")
-                    else:
-                        days_until = (next_review - datetime.now()).days
-                        st.success(f"📅 Review in {days_until}d")
+                    try:
+                        next_review = datetime.fromisoformat(word['next_review'].replace('Z', '+00:00'))
+                        next_review = next_review.replace(tzinfo=None)
+                        
+                        if next_review <= datetime.now():
+                            st.warning("⏰ Due now")
+                        else:
+                            days_until = (next_review - datetime.now()).days
+                            st.success(f"📅 Review in {days_until}d")
+                    except:
+                        st.info("📅 Review scheduled")
                     
                     if st.button("🗑️ Delete", key=f"del_{word['id']}"):
                         if delete_word(word['id']):
